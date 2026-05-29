@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id String @id @default(uuid())
+  nome String @db.VarChar(100)
+  email String @db.VarChar(100)
+  senha String @db.VarChar(100)
+}
+
+model Hospital {
+  id           String        @id @default(uuid())
+  nome         String        @db.VarChar(100)
+  endereco     String        @db.VarChar(255)
+  capacidade   Int?
+  criadoEm     DateTime      @default(now())
+  atualizadoEm DateTime      @updatedAt
+  ambulatorios Ambulatorio[]
+
+  @@map("hospitals")
+}
+
+model Ambulatorio {
+  id             String          @id @default(uuid())
+  nome           String          @db.VarChar(100)
+  sigla          String?         @db.VarChar(10)
+  rua            String          @db.VarChar(100)
+  bairro         String?         @db.VarChar(50)
+  numero         String?         @db.VarChar(10)
+  cidade         String          @db.VarChar(50)
+  estado         String          @db.Char(2)
+  cep            String?         @db.VarChar(8)
+  criadoEm       DateTime        @default(now())
+  atualizadoEm   DateTime        @updatedAt
+  idHospital     String
+  hospital       Hospital        @relation(fields: [idHospital], references: [id], onDelete: Cascade)
+  auditorias     Auditoria[]
+  medicosLotados MedicoLotacao[]
+
+  @@map("ambulatorios")
+}
+
+model Medico {
+  id           String              @id @default(uuid())
+  matricula    String              @unique @db.VarChar(20)
+  nome         String              @db.VarChar(100)
+  telefone     String?             @db.VarChar(20)
+  email        String?             @db.VarChar(100)
+  tipo         TipoMedico
+  criadoEm     DateTime            @default(now())
+  atualizadoEm DateTime            @updatedAt
+  carteira     CarteirafFuncional?
+  efetivo      MedicoEfetivo?
+  lotacoes     MedicoLotacao[]
+  residente    MedicoResidente?
+
+  @@map("medicos")
+}
+
+model MedicoLotacao {
+  id            String      @id @default(uuid())
+  dataInicio    DateTime    @db.Date
+  dataFim       DateTime?   @db.Date
+  criadoEm      DateTime    @default(now())
+  idMedico      String
+  idAmbulatorio String
+  ambulatorio   Ambulatorio @relation(fields: [idAmbulatorio], references: [id], onDelete: Cascade)
+  medico        Medico      @relation(fields: [idMedico], references: [id], onDelete: Cascade)
+
+  @@unique([idMedico, idAmbulatorio])
+  @@map("medicos_lotacoes")
+}
+
+model CarteirafFuncional {
+  id             String   @id @default(uuid())
+  crm            String   @unique @db.VarChar(20)
+  dataExpedicao  DateTime @db.Date
+  orgaoExpedidor String?  @db.VarChar(50)
+  criadoEm       DateTime @default(now())
+  atualizadoEm   DateTime @updatedAt
+  idMedico       String   @unique
+  medico         Medico   @relation(fields: [idMedico], references: [id], onDelete: Cascade)
+
+  @@map("carteiras_funcionais")
+}
+
+model MedicoResidente {
+  id                   String    @id @default(uuid())
+  valorBolsa           Decimal?  @db.Decimal(10, 2)
+  orgaoPagador         String?   @db.VarChar(100)
+  dataInicioResidencia DateTime? @db.Date
+  criadoEm             DateTime  @default(now())
+  atualizadoEm         DateTime  @updatedAt
+  idMedico             String    @unique
+  medico               Medico    @relation(fields: [idMedico], references: [id], onDelete: Cascade)
+
+  @@map("medicos_residentes")
+}
+
+model MedicoEfetivo {
+  id           String          @id @default(uuid())
+  dataAdmissao DateTime        @db.Date
+  criadoEm     DateTime        @default(now())
+  atualizadoEm DateTime        @updatedAt
+  idMedico     String          @unique
+  idSupervisor String?
+  auditorias   Auditoria[]
+  medico       Medico          @relation(fields: [idMedico], references: [id], onDelete: Cascade)
+  supervisor   MedicoEfetivo?  @relation("SupervisorSubordinado", fields: [idSupervisor], references: [id])
+  subordinados MedicoEfetivo[] @relation("SupervisorSubordinado")
+
+  @@map("medicos_efetivos")
+}
+
+model Auditoria {
+  id                  String                  @id @default(uuid())
+  dataAuditoria       DateTime                @db.Date
+  observacoes         String?
+  criadoEm            DateTime                @default(now())
+  atualizadoEm        DateTime                @updatedAt
+  idAmbulatorio       String
+  idMedicoResponsavel String
+  ambulatorio         Ambulatorio             @relation(fields: [idAmbulatorio], references: [id], onDelete: Cascade)
+  medicoResponsavel   MedicoEfetivo           @relation(fields: [idMedicoResponsavel], references: [id], onDelete: Cascade)
+  requisicoes         RequisicaoEquipamento[]
+
+  @@map("auditorias")
+}
+
+model Equipamento {
+  id           String                  @id @default(uuid())
+  nome         String                  @db.VarChar(100)
+  fabricante   String?                 @db.VarChar(100)
+  cor          String?                 @db.VarChar(50)
+  criadoEm     DateTime                @default(now())
+  atualizadoEm DateTime                @updatedAt
+  requisicoes  RequisicaoEquipamento[]
+
+  @@map("equipamentos")
+}
+
+model RequisicaoEquipamento {
+  id               String           @id @default(uuid())
+  numeroRequisicao String           @unique @db.VarChar(20)
+  dataRequisicao   DateTime         @db.Date
+  quantidade       Int
+  status           StatusRequisicao @default(Solicitado)
+  dataEntrega      DateTime?        @db.Date
+  criadoEm         DateTime         @default(now())
+  atualizadoEm     DateTime         @updatedAt
+  idAuditoria      String
+  idEquipamento    String
+  auditoria        Auditoria        @relation(fields: [idAuditoria], references: [id], onDelete: Cascade)
+  equipamento      Equipamento      @relation(fields: [idEquipamento], references: [id], onDelete: Cascade)
+
+  @@map("requisicoes_equipamentos")
+}
+
+enum TipoMedico {
+  Residente
+  Efetivo
+}
+
+enum StatusRequisicao {
+  Solicitado
+  Aprovado
+  Entregue
+}
