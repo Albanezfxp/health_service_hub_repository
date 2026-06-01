@@ -8,7 +8,7 @@ const getBaseURL = () => {
     return "http://10.0.2.2:3000"; // emulador Android
   }
 
-  return "http://192.168.0.4:3000"; // SEU IP (ajuste aqui)
+  return "http://192.168.0.5:3000"; // SEU IP (ajuste aqui)
 };
 
 export const api = axios.create({

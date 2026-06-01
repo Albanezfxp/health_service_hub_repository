@@ -1,20 +1,19 @@
+import FormEnter from "@/components/Login/FormEnter";
+import { fetchLogin, fetchRegisterUser } from "@/services/api";
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  View,
+  Animated,
   KeyboardAvoidingView,
   Platform,
-  StatusBar,
-  ToastAndroid,
-  ScrollView,
   SafeAreaView,
-  Animated,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  ToastAndroid,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import FormEnter from "@/components/Login/FormEnter";
-import { RegisterUserRequest } from "@/types/interfaces/RegisterUserRequest";
-import { fetchLogin, fetchRegisterUser } from "@/services/api";
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
