@@ -1,4 +1,8 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { RegisterUserDto } from 'src/application/dto/User/create-user.dto';
 import { User } from 'src/domain/entities/User.entity';
 import { IUserRepository } from 'src/domain/ports/User.repository';
@@ -7,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from 'src/application/dto/User/update-user.dto';
 import { LoginUserDto } from 'src/application/dto/User/login-user.dto';
 
+@Injectable()
 export class UserRepository implements IUserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
@@ -22,14 +27,16 @@ export class UserRepository implements IUserRepository {
 
   async findAll(): Promise<User[]> {
     const users_bd = await this.prisma.user.findMany();
-    const users_entity = users_bd.map((u) => new User(u.nome, u.email));
+    const users_entity = users_bd.map(
+      (u) => new User(u.nome, u.email, u.senha, u.id),
+    );
     return users_entity;
   }
 
   async findById(id: string): Promise<User> {
     const user_bd = await this.findInBd(id);
 
-    const entity = new User(user_bd.nome, user_bd.email);
+    const entity = new User(user_bd.nome, user_bd.email, 'xxx', user_bd.id);
 
     return entity;
   }
@@ -54,7 +61,7 @@ export class UserRepository implements IUserRepository {
     const isMatch = await bcrypt.compare(dto.senha, user_bd.senha);
     if (!isMatch) throw new BadRequestException('Senha incorreta');
 
-    return new User(user_bd.nome, user_bd.email);
+    return new User(user_bd.nome, user_bd.email, 'XXX', user_bd.id);
   }
 
   async register(dto: RegisterUserDto): Promise<User> {

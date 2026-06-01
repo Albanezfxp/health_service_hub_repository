@@ -13,8 +13,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FormEnter from "@/components/Login/FormEnter";
-import { RegisterUserRequest } from "@/types/interfaces/RegisterUserRequest";
 import { fetchLogin, fetchRegisterUser } from "@/services/api";
+import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
@@ -41,7 +42,8 @@ export default function AuthScreen() {
 
       const response = await fetchLogin(payload);
       console.log(`Usuario logado: ${response}`);
-      // Aqui você pode adicionar a navegação para a próxima tela
+      await AsyncStorage.setItem("userId", response.id);
+      router.push("/dashboard");
     } catch (error: any) {
       if (error.response) {
         console.log("Erro API:", error.response.data);
