@@ -4,9 +4,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 
 import DashboardScreen from "@/screens/DashboardScreen";
-import MedicosScreen from "@/screens/MedicosScreen";
-import HospitaisScreen from "@/screens/HospitaisScreen";
-import ProfileScreen from "@/screens/ProfileScreen";
+import HospitalScreen from "@/screens/HospitalScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -20,11 +18,12 @@ export default function BottomTabs() {
         tabBarStyle: {
           backgroundColor: "#FFF",
           borderTopWidth: 0,
-          height: 65,
+          height: 70,
+          paddingBottom: 10,
           elevation: 10,
         },
 
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused }) => {
           let iconName: any;
 
           if (route.name === "Dashboard") {
@@ -40,7 +39,7 @@ export default function BottomTabs() {
           return (
             <Ionicons
               name={iconName}
-              size={24}
+              size={26}
               color={focused ? "#6366F1" : "#9CA3AF"}
             />
           );
@@ -48,9 +47,11 @@ export default function BottomTabs() {
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Medicos" component={MedicosScreen} />
-      <Tab.Screen name="Hospitais" component={HospitaisScreen} />
-      <Tab.Screen name="Perfil" component={ProfileScreen} />
+      <Tab.Screen name="Hospitais" component={HospitalScreen} />
+
+      {/* 🔥 PRÓXIMAS TELAS */}
+      {/* <Tab.Screen name="Medicos" component={MedicosScreen} /> */}
+      {/* <Tab.Screen name="Perfil" component={ProfileScreen} /> */}
     </Tab.Navigator>
   );
 }

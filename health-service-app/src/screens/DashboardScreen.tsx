@@ -21,7 +21,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function DashboardScreen({ navigation }: any) {
   const [scaleAnim] = useState(new Animated.Value(0.9));
-  const [selectedFlow, setSelectedFlow] = useState<string | null>(null);
 
   const [hospitaisCount, setHospitaisCount] = useState<number | null>(null);
   const [medicosCount, setMedicosCount] = useState<number | null>(null);
@@ -31,10 +30,8 @@ export default function DashboardScreen({ navigation }: any) {
 
   const [user, setUser] = useState<any>(null);
   const [loadingUser, setLoadingUser] = useState(true);
-
   const [loadingStats, setLoadingStats] = useState(true);
 
-  // 🔹 Carrega estatísticas (PARALELO = mais rápido)
   async function loadStatics() {
     try {
       const [hospitais, ambulatorios, medicos] = await Promise.all([
@@ -53,7 +50,6 @@ export default function DashboardScreen({ navigation }: any) {
     }
   }
 
-  // 🔹 Carrega usuário
   async function loadUserStatics() {
     try {
       const userId = await AsyncStorage.getItem("userId");
@@ -73,12 +69,11 @@ export default function DashboardScreen({ navigation }: any) {
     loadUserStatics();
   }, []);
 
-  // 🔹 Stats dinâmicos (SEM MOCK)
   const computedStats = useMemo(
     () => [
       {
         label: "Usuário",
-        value: user ? user.nome : 0,
+        value: user ? user.nome : "...",
         icon: "person-outline",
       },
       {
@@ -101,6 +96,23 @@ export default function DashboardScreen({ navigation }: any) {
   );
 
   const isLoading = loadingStats || loadingUser;
+
+  // 🔥 NAVEGAÇÃO CENTRALIZADA
+  function handleNavigation(label: string) {
+    switch (label) {
+      case "Médicos":
+        navigation.navigate("Medicos");
+        break;
+      case "Hospitais":
+        navigation.navigate("Hospitais");
+        break;
+      case "Ambulatórios":
+        navigation.navigate("Ambulatorios");
+        break;
+      default:
+        console.log("Tela não mapeada:", label);
+    }
+  }
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -129,7 +141,7 @@ export default function DashboardScreen({ navigation }: any) {
             <QuickAction
               key={action.id}
               action={action}
-              onPress={() => console.log("Navegar para:", action.label)}
+              onPress={() => handleNavigation(action.label)}
             />
           ))}
         </View>

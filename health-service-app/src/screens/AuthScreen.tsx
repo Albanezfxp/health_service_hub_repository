@@ -1,21 +1,21 @@
-import React, { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  KeyboardAvoidingView,
-  Platform,
-  StatusBar,
-  ToastAndroid,
-  ScrollView,
-  SafeAreaView,
-  Animated,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import FormEnter from "@/components/Login/FormEnter";
 import { fetchLogin, fetchRegisterUser } from "@/services/api";
-import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
+import React, { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  ToastAndroid,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
