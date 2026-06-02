@@ -15,7 +15,7 @@ export class Ambulatorio {
   cep?: string;
 
   idHospital: string;
-  hospital?: Hospital;
+  hospital?: Hospital | string;
 
   medicosLotados?: any[];
   auditorias?: any[];
@@ -34,7 +34,7 @@ export class Ambulatorio {
       bairro?: string;
       numero?: string;
       cep?: string;
-      hospital?: Hospital;
+      hospital?: string | Hospital;
       medicosLotados?: any[];
       auditorias?: any[];
       criadoEm?: Date;

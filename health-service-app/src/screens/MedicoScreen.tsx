@@ -16,58 +16,44 @@ import {
   NativeScrollEvent,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import UnidadeCard from "../components/Hospital/HospitalCard";
-import { Hospital } from "@/types/interfaces/Hospital";
-import {
-  createHospital,
-  deleteHospital,
-  getHospitais,
-  updateHospital,
-} from "@/services/hospital.service";
 import { COLORS } from "@/theme/colors";
-import HospitalForm from "../components/Hospital/HospitalForm";
-import { fetchAmbulatorio, fetchCreateAmbulatorio } from "@/services/api";
+import MedicoCard from "@/components/Medicos/MedicoCard";
+import MedicoForm from "@/components/Medicos/MedicoForm";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-export default function HospitalScreen() {
-  const [hospitais, setHospitais] = useState<Hospital[]>([]);
-  const [ambulatorios, setAmbulatorios] = useState<any[]>([]);
+export default function MedicoScreen() {
+  const [medicos, setMedicos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const [abaAtiva, setAbaAtiva] = useState<"hospitais" | "ambulatorios">(
-    "hospitais",
+  const [abaAtiva, setAbaAtiva] = useState<"efetivos" | "residentes">(
+    "efetivos",
   );
 
   const slideRef = useRef<ScrollView>(null);
-
-  // TRAVA DE CONTROLE: Impede que o scroll dispare atualizações fantasmas durante o clique
   const isProgrammaticScroll = useRef(false);
 
   // Estados dos Modais
   const [selectionModalVisible, setSelectionModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [tipoCadastro, setTipoCadastro] = useState<
-    "hospital" | "ambulatorio" | null
+    "EFETIVO" | "RESIDENTE" | null
   >(null);
   const [itemSelecionado, setItemSelecionado] = useState<any | null>(null);
 
   useEffect(() => {
-    carregarIniciais();
+    carregarMedicos();
   }, []);
 
-  async function carregarIniciais() {
+  async function carregarMedicos() {
     try {
       setLoading(true);
-      const [dataHospitais, dataAmbulatorios] = await Promise.all([
-        getHospitais().catch(() => []),
-        fetchAmbulatorio().catch(() => []),
-      ]);
-      setHospitais(dataHospitais);
-      setAmbulatorios(dataAmbulatorios);
+      // Simulação de fetch da API (Substituir pelo seu service real)
+      // const data = await getMedicos();
+      // setMedicos(data);
+      setMedicos([]); // Começa vazio
     } catch (error) {
       console.log(error);
-      Alert.alert("Erro", "Não foi possível carregar os registros iniciais.");
+      Alert.alert("Erro", "Não foi possível carregar os médicos.");
     } finally {
       setLoading(false);
     }
@@ -75,52 +61,42 @@ export default function HospitalScreen() {
 
   async function atualizarDadosSilencioso() {
     try {
-      if (abaAtiva === "hospitais") {
-        const data = await getHospitais();
-        setHospitais(data);
-      } else {
-        const data = await fetchAmbulatorio();
-        setAmbulatorios(data);
-      }
+      // const data = await getMedicos();
+      // setMedicos(data);
     } catch (error) {
       console.log(error);
     }
   }
 
-  // Ativa a trava, muda o estado e faz o scroll limpo
-  function gerenciarTrocaAba(aba: "hospitais" | "ambulatorios") {
+  // Separa as listas para os slides baseados no Enum TipoMedico do seu Prisma
+  const efetivos = medicos.filter((m) => m.tipo === "EFETIVO");
+  const residentes = medicos.filter((m) => m.tipo === "RESIDENTE");
+
+  function gerenciarTrocaAba(aba: "efetivos" | "residentes") {
     if (abaAtiva === aba) return;
-
-    isProgrammaticScroll.current = true; // Liga a trava
+    isProgrammaticScroll.current = true;
     setAbaAtiva(aba);
-
-    const xOffset = aba === "hospitais" ? 0 : SCREEN_WIDTH;
+    const xOffset = aba === "efetivos" ? 0 : SCREEN_WIDTH;
     slideRef.current?.scrollTo({ x: xOffset, animated: true });
-
-    // Libera a trava logo após o término esperado da animação nativa (300ms)
     setTimeout(() => {
       isProgrammaticScroll.current = false;
     }, 350);
   }
 
   function handleOnScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
-    // Se a rolagem foi gerada pelo clique do botão, ignora o cálculo do scroll
     if (isProgrammaticScroll.current) return;
-
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const paginaAtual = Math.round(contentOffsetX / SCREEN_WIDTH);
-    const novaAba = paginaAtual === 0 ? "hospitais" : "ambulatorios";
-
+    const novaAba = paginaAtual === 0 ? "efetivos" : "residentes";
     if (abaAtiva !== novaAba) {
       setAbaAtiva(novaAba);
     }
   }
 
   async function handleDelete(id: string) {
-    const nomeTipo = abaAtiva === "hospitais" ? "Hospital" : "Ambulatório";
     Alert.alert(
-      `Excluir ${nomeTipo}`,
-      `Deseja realmente excluir este ${nomeTipo.toLowerCase()}?`,
+      "Excluir Médico",
+      "Deseja realmente remover este profissional do sistema?",
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -128,14 +104,10 @@ export default function HospitalScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              if (abaAtiva === "hospitais") {
-                await deleteHospital(id);
-              } else {
-                // await deleteAmbulatorio(id);
-              }
+              // await deleteMedico(id);
+              Alert.alert("Sucesso", "Médico removido com sucesso!");
               atualizarDadosSilencioso();
             } catch (error) {
-              console.log(error);
               Alert.alert("Erro", "Não foi possível excluir.");
             }
           },
@@ -146,11 +118,11 @@ export default function HospitalScreen() {
 
   function handleEdit(item: any) {
     setItemSelecionado(item);
-    setTipoCadastro(abaAtiva === "hospitais" ? "hospital" : "ambulatorio");
+    setTipoCadastro(item.tipo);
     setModalVisible(true);
   }
 
-  function handleSelectTipo(tipo: "hospital" | "ambulatorio") {
+  function handleSelectTipo(tipo: "EFETIVO" | "RESIDENTE") {
     setTipoCadastro(tipo);
     setSelectionModalVisible(false);
     setModalVisible(true);
@@ -158,27 +130,19 @@ export default function HospitalScreen() {
 
   async function handleSave(dados: any) {
     try {
-      if (dados.tipo === "ambulatorio") {
-        await fetchCreateAmbulatorio(dados);
-        Alert.alert("Sucesso", "Ambulatório salvo com sucesso!");
-        setTimeout(() => gerenciarTrocaAba("ambulatorios"), 300);
+      if (itemSelecionado) {
+        // await updateMedico(itemSelecionado.id, dados);
+        Alert.alert("Sucesso", "Cadastro médico atualizado!");
       } else {
-        if (itemSelecionado) {
-          await updateHospital(itemSelecionado.id, dados);
-        } else {
-          await createHospital(dados);
-        }
-        Alert.alert("Sucesso", "Hospital salvo com sucesso!");
-        setTimeout(() => gerenciarTrocaAba("hospitais"), 300);
+        // await createMedico(dados);
+        Alert.alert("Sucesso", "Novo médico cadastrado!");
       }
-
       setModalVisible(false);
       setTipoCadastro(null);
       setItemSelecionado(null);
       await atualizarDadosSilencioso();
     } catch (error) {
-      console.log("Erro ao salvar registro:", error);
-      Alert.alert("Erro", "Não foi possível salvar.");
+      Alert.alert("Erro", "Não foi possível salvar o médico.");
     }
   }
 
@@ -196,49 +160,45 @@ export default function HospitalScreen() {
 
       {/* HERO HEADER */}
       <View style={styles.header}>
-        <Text style={styles.title}>
-          {abaAtiva === "hospitais" ? "🏥 Hospitais" : "🩺 Ambulatórios"}
-        </Text>
-        <Text style={styles.subtitle}>Gestão inteligente e centralizada</Text>
+        <Text style={styles.title}>👨‍⚕️ Corpo Médico</Text>
+        <Text style={styles.subtitle}>Gestão de especialidades e plantões</Text>
 
         <View style={styles.headerStats}>
           <View style={styles.statBox}>
-            <Text style={styles.statNumber}>
-              {abaAtiva === "hospitais"
-                ? hospitais.length
-                : ambulatorios.length}
-            </Text>
-            <Text style={styles.statLabel}>Registros</Text>
+            <Text style={styles.statNumber}>{medicos.length}</Text>
+            <Text style={styles.statLabel}>Total</Text>
           </View>
-
           <View style={styles.statBox}>
-            <Text style={styles.statNumber}>Ativo</Text>
-            <Text style={styles.statLabel}>Sistema</Text>
+            <Text style={styles.statNumber}>{efetivos.length}</Text>
+            <Text style={styles.statLabel}>Efetivos</Text>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={styles.statNumber}>{residentes.length}</Text>
+            <Text style={styles.statLabel}>Residentes</Text>
           </View>
         </View>
       </View>
 
-      {/* SHORTCUTS - FIXOS COM INDICAÇÃO EM BORDA */}
+      {/* SHORTCUTS / TABS (Fundo fixo sem animação bizarra) */}
       <View style={styles.shortcutRow}>
         {[
           {
-            id: "hospitais",
-            icon: "business",
-            label: "Hospitais",
+            id: "efetivos",
+            icon: "shield-checkmark",
+            label: "Efetivos",
             color: COLORS.primary,
           },
           {
-            id: "ambulatorios",
-            icon: "medical",
-            label: "Ambulatórios",
-            color: "#2E7D32",
+            id: "residentes",
+            icon: "school",
+            label: "Residentes",
+            color: "#1565C0",
           },
         ].map((item) => {
           const isSelected = abaAtiva === item.id;
           return (
             <Pressable
               key={item.id}
-              disabled={item.id === "medicos"}
               style={[
                 styles.shortcutCard,
                 isSelected && {
@@ -269,20 +229,8 @@ export default function HospitalScreen() {
         })}
       </View>
 
-      {/* LISTA CONTAINER GLOBAL */}
+      {/* COMPONENTE DE LISTAGEM DE SLIDES HORIZONTAIS */}
       <View style={styles.listContainer}>
-        <View style={styles.listHeader}>
-          <Text style={styles.listTitle}>
-            {abaAtiva === "hospitais"
-              ? "Hospitais Cadastrados"
-              : "Ambulatórios Cadastrados"}
-          </Text>
-          <Text style={styles.listCounter}>
-            {abaAtiva === "hospitais" ? hospitais.length : ambulatorios.length}{" "}
-            total
-          </Text>
-        </View>
-
         <ScrollView
           ref={slideRef}
           horizontal
@@ -292,15 +240,15 @@ export default function HospitalScreen() {
           scrollEventThrottle={16}
           bounces={false}
         >
-          {/* SLIDE 1: HOSPITAIS */}
+          {/* SLIDE 1: EFETIVOS */}
           <View style={styles.pageSlide}>
             <FlatList
-              data={hospitais}
+              data={efetivos}
               keyExtractor={(item) => item.id}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.listContent}
               renderItem={({ item }) => (
-                <UnidadeCard
+                <MedicoCard
                   item={item}
                   onDelete={handleDelete}
                   onEdit={handleEdit}
@@ -309,27 +257,27 @@ export default function HospitalScreen() {
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <Ionicons
-                    name="medkit-outline"
+                    name="people-outline"
                     size={48}
                     color={COLORS.primary}
                   />
                   <Text style={styles.emptyTitle}>
-                    Nenhum hospital encontrado
+                    Nenhum médico efetivo encontrado
                   </Text>
                 </View>
               }
             />
           </View>
 
-          {/* SLIDE 2: AMBULATÓRIOS */}
+          {/* SLIDE 2: RESIDENTES */}
           <View style={styles.pageSlide}>
             <FlatList
-              data={ambulatorios}
+              data={residentes}
               keyExtractor={(item) => item.id}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.listContent}
               renderItem={({ item }) => (
-                <UnidadeCard
+                <MedicoCard
                   item={item}
                   onDelete={handleDelete}
                   onEdit={handleEdit}
@@ -337,9 +285,9 @@ export default function HospitalScreen() {
               )}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
-                  <Ionicons name="medical-outline" size={48} color="#2E7D32" />
+                  <Ionicons name="book-outline" size={48} color="#1565C0" />
                   <Text style={styles.emptyTitle}>
-                    Nenhum ambulatório encontrado
+                    Nenhum residente encontrado
                   </Text>
                 </View>
               }
@@ -359,22 +307,24 @@ export default function HospitalScreen() {
         <Ionicons name="add" size={30} color="#FFF" />
       </Pressable>
 
-      {/* MODAL DE ESCOLHA */}
+      {/* POP-UP DE ESCOLA DO SUBTIPO */}
       <Modal visible={selectionModalVisible} transparent animationType="fade">
         <View style={styles.selectionOverlay}>
           <View style={styles.selectionCard}>
-            <Text style={styles.selectionTitle}>O que deseja cadastrar?</Text>
+            <Text style={styles.selectionTitle}>
+              Selecione o vínculo do Médico
+            </Text>
             <TouchableOpacity
-              style={styles.typeButtonHospital}
-              onPress={() => handleSelectTipo("hospital")}
+              style={styles.typeButtonEfetivo}
+              onPress={() => handleSelectTipo("EFETIVO")}
             >
-              <Text style={styles.typeButtonText}>Novo Hospital</Text>
+              <Text style={styles.typeButtonText}>📋 Médico Efetivo</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.typeButton}
-              onPress={() => handleSelectTipo("ambulatorio")}
+              style={styles.typeButtonResidente}
+              onPress={() => handleSelectTipo("RESIDENTE")}
             >
-              <Text style={styles.typeButtonText}>Novo Ambulatório</Text>
+              <Text style={styles.typeButtonText}>🎓 Médico Residente</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.closeSelectionButton}
@@ -386,12 +336,12 @@ export default function HospitalScreen() {
         </View>
       </Modal>
 
-      {/* FORMULÁRIO */}
-      <HospitalForm
+      {/* FORMULÁRIO COMPLETO */}
+      <MedicoForm
         visible={modalVisible}
         tipo={tipoCadastro}
-        hospital={itemSelecionado}
-        hospitaisDisponiveis={hospitais}
+        medico={itemSelecionado}
+        supervisoresDisponiveis={efetivos} // Só médicos efetivos podem supervisionar
         onClose={() => {
           setModalVisible(false);
           setTipoCadastro(null);
@@ -422,11 +372,13 @@ const styles = StyleSheet.create({
   headerStats: { flexDirection: "row", marginTop: 16, gap: 12 },
   statBox: {
     backgroundColor: "rgba(255,255,255,0.15)",
-    padding: 12,
+    padding: 10,
     borderRadius: 12,
+    flex: 1,
+    alignItems: "center",
   },
-  statNumber: { color: "#FFF", fontSize: 16, fontWeight: "700" },
-  statLabel: { color: "#E5E7EB", fontSize: 12 },
+  statNumber: { color: "#FFF", fontSize: 15, fontWeight: "700" },
+  statLabel: { color: "#E5E7EB", fontSize: 11 },
   shortcutRow: { flexDirection: "row", gap: 10, marginBottom: 20 },
   shortcutCard: {
     flex: 1,
@@ -453,18 +405,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     paddingTop: 20,
   },
-  listHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
-    paddingHorizontal: 14,
-  },
-  listTitle: { fontSize: 15, fontWeight: "700" },
-  listCounter: { fontSize: 12, color: "#6B7280" },
   pageSlide: { width: SCREEN_WIDTH - 32, paddingHorizontal: 14 },
   listContent: { paddingBottom: 120 },
   emptyContainer: { alignItems: "center", paddingVertical: 40, gap: 8 },
-  emptyTitle: { fontSize: 14, fontWeight: "700" },
+  emptyTitle: { fontSize: 14, fontWeight: "700", color: "#6B7280" },
   fab: {
     position: "absolute",
     bottom: 24,
@@ -494,32 +438,28 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   selectionTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "700",
     marginBottom: 20,
     color: "#1F2937",
   },
-  typeButton: {
-    backgroundColor: "#3CB371",
+  typeButtonEfetivo: {
+    backgroundColor: COLORS.primary,
     width: "100%",
     padding: 16,
     borderRadius: 14,
     alignItems: "center",
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
   },
-  typeButtonHospital: {
-    backgroundColor: "#4499b8",
+  typeButtonResidente: {
+    backgroundColor: "#1565C0",
     width: "100%",
     padding: 16,
     borderRadius: 14,
     alignItems: "center",
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
   },
-  typeButtonText: { fontSize: 16, fontWeight: "600", color: "#e6e6e6" },
+  typeButtonText: { fontSize: 16, fontWeight: "600", color: "#FFF" },
   closeSelectionButton: { marginTop: 8, padding: 10 },
   cancelText: { color: "#EF4444", fontWeight: "600", fontSize: 15 },
 });

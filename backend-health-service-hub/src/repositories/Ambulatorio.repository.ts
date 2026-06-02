@@ -11,11 +11,21 @@ export class AmbulatorioRepository implements IAmbulatorioRepository {
   async findAll(): Promise<Ambulatorio[]> {
     const ambulatorios_bd = await this.prisma.ambulatorio.findMany();
 
-    if (!ambulatorios_bd)
-      throw new NotFoundException('Ambulatorios não encontrado');
+    if (!ambulatorios_bd || ambulatorios_bd.length === 0)
+      throw new NotFoundException('Ambulatorios não encontrados');
+
+    const hospital_name = await Promise.all(
+      ambulatorios_bd.map(async (ambulatorio) => {
+        const hospital = await this.prisma.hospital.findFirst({
+          where: { id: ambulatorio.idHospital },
+          select: { nome: true },
+        });
+        return hospital?.nome;
+      }),
+    );
 
     return ambulatorios_bd.map(
-      (a) =>
+      (a, index) =>
         new Ambulatorio(a.nome, a.rua, a.cidade, a.estado, a.idHospital, {
           sigla: a.sigla || undefined,
           bairro: a.bairro || undefined,
@@ -24,6 +34,10 @@ export class AmbulatorioRepository implements IAmbulatorioRepository {
           id: a.id,
           criadoEm: a.criadoEm,
           atualizadoEm: a.atualizadoEm,
+          // CORRIGIDO: Passando como um objeto para que o serializador/JSON não o anule
+          hospital: hospital_name[index]
+            ? ({ id: a.idHospital, nome: hospital_name[index] } as any)
+            : undefined,
         }),
     );
   }

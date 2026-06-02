@@ -1,5 +1,5 @@
 export interface Ambulatorio {
-  id: string;
+  id?: string;
 
   nome: string;
   sigla: string;

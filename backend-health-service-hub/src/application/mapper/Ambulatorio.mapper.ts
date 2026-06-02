@@ -30,7 +30,7 @@ export class AmbulatorioMapper {
       estado: ambulatorio.estado,
       cep: ambulatorio.cep,
       criadoEm: ambulatorio.criadoEm,
-      hospital: ambulatorio.hospital?.nome ?? null,
+      hospital: ambulatorio.hospital ?? null,
     };
   }
   static toResponseList(ambulatorios: Ambulatorio[]) {

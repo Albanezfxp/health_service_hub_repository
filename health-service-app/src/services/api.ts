@@ -1,3 +1,4 @@
+import { Ambulatorio } from "@/types/interfaces/Ambulatorio";
 import { Hospital } from "@/types/interfaces/Hospital";
 import { LoginUserRequest } from "@/types/interfaces/LoginUserRequest";
 import { RegisterUserRequest } from "@/types/interfaces/RegisterUserRequest";
@@ -12,10 +13,12 @@ type CreateHospitalDTO = {
 
 const getBaseURL = () => {
   if (Platform.OS === "android") {
-    return "http://10.0.2.2:3000"; // emulador Android
+    // Mantém o IP especial que o emulador do Android Studio usa para acessar a máquina hospedeira
+    return "http://10.0.2.2:3000";
   }
 
-  return "http://192.168.0.103:3000";
+  // ATUALIZADO: Seu IP real atual da rede Wi-Fi (para iOS ou dispositivo físico Android)
+  return "http://192.168.0.5:3000";
 };
 
 export const api = axios.create({
@@ -68,5 +71,17 @@ export const FetchcreateHospital = async (
   payload: CreateHospitalDTO,
 ): Promise<Hospital> => {
   const response = await api.post("/hospitais", payload);
+  return response.data;
+};
+
+export const fetchCreateAmbulatorio = async (
+  payload: Ambulatorio,
+): Promise<Ambulatorio> => {
+  const response = await api.post("/ambulatorios", payload);
+  return response.data;
+};
+
+export const fetchAmbulatorio = async () => {
+  const response = await api.get("/ambulatorios");
   return response.data;
 };

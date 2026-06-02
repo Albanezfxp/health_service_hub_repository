@@ -59,15 +59,11 @@ export default function TabLayout() {
 
       {/* 3. Atalho para Ambulatórios */}
       <Tabs.Screen
-        name="ambulatorio"
+        name="medicos"
         options={{
-          title: "Ambulatórios",
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "medical" : "medical-outline"}
-              size={size}
-              color={color}
-            />
+          title: "Medicos",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people" size={size} color={color} />
           ),
         }}
       />
