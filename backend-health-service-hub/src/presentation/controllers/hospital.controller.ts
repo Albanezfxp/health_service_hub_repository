@@ -23,11 +23,11 @@ import { UpdateHospitalUseCase } from 'src/application/use-cases/hospital/Update
 @Controller('hospitais')
 export class HospitalController {
   constructor(
-    private createHospitalUseCase: CreateHospitalUseCase,
-    private deleteHospitalUseCase: DeleteHospitalUseCase,
-    private findAllHospitalUseCase: FindAllHospitalUseCase,
-    private findByIdHospitalUseCase: FindByIdHospitalUseCase,
-    private updateHospitalUseCase: UpdateHospitalUseCase,
+    private readonly createHospitalUseCase: CreateHospitalUseCase,
+    private readonly deleteHospitalUseCase: DeleteHospitalUseCase,
+    private readonly findAllHospitalUseCase: FindAllHospitalUseCase,
+    private readonly findByIdHospitalUseCase: FindByIdHospitalUseCase,
+    private readonly updateHospitalUseCase: UpdateHospitalUseCase,
   ) {}
 
   @Get()
@@ -49,6 +49,7 @@ export class HospitalController {
   }
 
   @HttpCode(HttpStatus.CREATED)
+  @Post()
   async create(@Body() dto: HospitalCreateDto) {
     const hospital = await this.createHospitalUseCase.execute(dto);
     return HospitalMapper.toResponse(hospital);

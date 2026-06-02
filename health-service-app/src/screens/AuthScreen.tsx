@@ -43,7 +43,7 @@ export default function AuthScreen() {
       const response = await fetchLogin(payload);
       console.log(`Usuario logado: ${response}`);
       await AsyncStorage.setItem("userId", response.id);
-      router.push("/dashboard");
+      router.replace("/(tabs)/dashboard");
     } catch (error: any) {
       if (error.response) {
         console.log("Erro API:", error.response.data);

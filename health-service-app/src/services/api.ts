@@ -1,7 +1,14 @@
+import { Hospital } from "@/types/interfaces/Hospital";
 import { LoginUserRequest } from "@/types/interfaces/LoginUserRequest";
 import { RegisterUserRequest } from "@/types/interfaces/RegisterUserRequest";
 import axios from "axios";
 import { Platform } from "react-native";
+
+type CreateHospitalDTO = {
+  nome: string;
+  endereco: string;
+  capacidade?: number;
+};
 
 const getBaseURL = () => {
   if (Platform.OS === "android") {
@@ -54,5 +61,12 @@ export const fetchAmbulatorios = async () => {
 
 export const fetchUserById = async (id: string) => {
   const response = await api.get(`/users/${id}`);
+  return response.data;
+};
+
+export const FetchcreateHospital = async (
+  payload: CreateHospitalDTO,
+): Promise<Hospital> => {
+  const response = await api.post("/hospitais", payload);
   return response.data;
 };

@@ -1,20 +1,20 @@
-// src/styles/dashboardStyles.ts
-
 import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#F4F9F9",
   },
 
   header: {
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 50,
+    backgroundColor: "#FFFFFF",
+    marginBottom: 10,
   },
 
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "700",
     color: "#111827",
   },
@@ -30,22 +30,20 @@ export default StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     paddingHorizontal: 20,
+    gap: 10,
   },
 
   statCard: {
-    width: "47%",
+    width: "48%",
     backgroundColor: "#FFF",
     borderRadius: 16,
     padding: 16,
-    marginBottom: 12,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    marginBottom: 10,
+    elevation: 2,
   },
 
   statValue: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "700",
     marginTop: 8,
     color: "#111827",
@@ -54,7 +52,6 @@ export default StyleSheet.create({
   statLabel: {
     fontSize: 12,
     color: "#6B7280",
-    marginTop: 4,
   },
 
   section: {
@@ -69,7 +66,6 @@ export default StyleSheet.create({
     color: "#111827",
   },
 
-  /* QUICK ACTIONS */
   quickContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -77,17 +73,16 @@ export default StyleSheet.create({
 
   quickBtn: {
     alignItems: "center",
-    width: "22%",
+    flex: 1,
   },
 
   quickIcon: {
-    width: 48,
-    height: 48,
+    width: 50,
+    height: 50,
     borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 6,
-    elevation: 4,
   },
 
   quickText: {
@@ -95,9 +90,11 @@ export default StyleSheet.create({
     color: "#374151",
   },
 
-  /* ACTIVITIES */
   activityContainer: {
-    marginTop: 8,
+    backgroundColor: "#FFF",
+    borderRadius: 16,
+    padding: 16,
+    elevation: 2,
   },
 
   activityItem: {
@@ -107,7 +104,7 @@ export default StyleSheet.create({
 
   timeline: {
     alignItems: "center",
-    marginRight: 12,
+    marginRight: 10,
   },
 
   dot: {
@@ -121,7 +118,7 @@ export default StyleSheet.create({
     width: 2,
     flex: 1,
     backgroundColor: "#E5E7EB",
-    marginTop: 2,
+    marginTop: 4,
   },
 
   activityContent: {
@@ -137,5 +134,24 @@ export default StyleSheet.create({
     fontSize: 12,
     color: "#6B7280",
     marginTop: 2,
+  },
+
+  resetBtn: {
+    marginTop: 30,
+    alignSelf: "center",
+    backgroundColor: "#EF4444",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 40,
+  },
+
+  resetText: {
+    color: "#FFF",
+    fontWeight: "600",
+  },
+
+  pressed: {
+    opacity: 0.7,
   },
 });
