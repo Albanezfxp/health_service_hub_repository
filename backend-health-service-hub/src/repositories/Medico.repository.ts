@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { TipoMedico } from '@prisma/client';
 import { MedicoCreateDto } from 'src/application/dto/Medico/Medico_create.dto';
 import { MedicoUpdateDto } from 'src/application/dto/Medico/Medico_update.dto';
 import { MedicoMapper } from 'src/application/mapper/Medico.mapper';
@@ -46,21 +47,27 @@ export class MedicoRepository implements IMedicoRepository {
     });
 
     if (medico_exist) throw new BadRequestException('Matricula já cadastrado');
+
     try {
+      // 🔥 Higieniza a string para casar com o schema.prisma ("Efetivo" ou "Residente")
+      const tipoTexto = medico.tipo.toString().toLowerCase();
+      const tipoMapeado = (tipoTexto.charAt(0).toUpperCase() +
+        tipoTexto.slice(1)) as any;
+
       const new_medico = await this.prisma.medico.create({
         data: {
           matricula: medico.matricula,
           nome: medico.nome,
           email: medico.email,
           telefone: medico.telefone,
-          tipo: medico.tipo,
+          tipo: tipoMapeado, // Passa o Enum perfeitamente formatado
           criadoEm: new Date(),
         },
       });
 
       return MedicoMapper.prismaToEntity(new_medico);
     } catch (error) {
-      throw new BadRequestException('Erro ao criar medico' + error);
+      throw new BadRequestException('Erro ao criar medico ' + error);
     }
   }
 
@@ -69,9 +76,26 @@ export class MedicoRepository implements IMedicoRepository {
       where: { id: id },
     });
 
-    if (!medico_exist) throw new NotFoundException('Medico não econtrado');
+    if (!medico_exist) throw new NotFoundException('Medico não encontrado');
 
     try {
+      // 🔥 Higieniza aqui também
+      const tipoTexto = medico.tipo?.toString().toLowerCase();
+      const tipoMapeado = tipoTexto
+        ? ((tipoTexto.charAt(0).toUpperCase() + tipoTexto.slice(1)) as any)
+        : undefined;
+
+      // monta objeto de dados permitindo campos opcionais
+      const data: any = {
+        matricula: medico.matricula,
+        nome: medico.nome,
+        email: medico.email,
+        telefone: medico.telefone,
+        atualizadoEm: new Date(),
+      };
+
+      if (tipoMapeado) data.tipo = tipoMapeado;
+
       const medico_update = await this.prisma.medico.update({
         where: { id: id },
         data: {
@@ -79,17 +103,16 @@ export class MedicoRepository implements IMedicoRepository {
           nome: medico.nome,
           email: medico.email,
           telefone: medico.telefone,
-          tipo: medico.tipo,
+          tipo: tipoMapeado,
           atualizadoEm: new Date(),
         },
       });
 
       return MedicoMapper.prismaToEntity(medico_update);
     } catch (error) {
-      throw new BadRequestException('Erro ao atualizar medico' + error);
+      throw new BadRequestException('Erro ao atualizar medico ' + error);
     }
   }
-
   async delete(id: string): Promise<void> {
     const medico_exist = await this.prisma.medico.findUnique({
       where: { id: id },

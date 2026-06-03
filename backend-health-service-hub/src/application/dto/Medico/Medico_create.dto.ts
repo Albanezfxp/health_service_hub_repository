@@ -1,16 +1,23 @@
 import { TipoMedico } from '@prisma/client';
-import { IsString, MinLength, IsEnum } from 'class-validator';
+import { IsString, IsEnum, IsNotEmpty } from 'class-validator';
 
 export class MedicoCreateDto {
-  @IsString({ message: 'Matricula deve ser uma string' })
+  @IsString()
+  @IsNotEmpty()
   matricula!: string;
-  @IsString({ message: 'Nome deve ser uma string' })
+
+  @IsString()
+  @IsNotEmpty()
   nome!: string;
-  @IsString({ message: 'Telefone deve ser uma string' })
-  @MinLength(8, { message: 'Endereço deve ter no minimo 8 caracteres' })
+
+  @IsString()
+  @IsNotEmpty()
   telefone!: string;
-  @IsString({ message: 'Capacidade deve ser um number' })
+
+  @IsString()
+  @IsNotEmpty()
   email!: string;
-  @IsEnum(TipoMedico)
+
+  @IsEnum(TipoMedico, { message: 'Tipo deve ser Efetivo ou Residente' })
   tipo!: TipoMedico;
 }

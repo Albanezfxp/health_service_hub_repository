@@ -19,6 +19,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/theme/colors";
 import MedicoCard from "@/components/Medicos/MedicoCard";
 import MedicoForm from "@/components/Medicos/MedicoForm";
+import {
+  fetchCreateMedico,
+  fetchMedicos,
+  fetchUpdateMedico,
+  fetchDeleteMedico,
+  fetchCreateMedicoResidente,
+  fetchCreateMedicoEfetivo,
+  fetchCreateMedicoLotacao,
+} from "@/services/api";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -32,7 +41,7 @@ export default function MedicoScreen() {
   const slideRef = useRef<ScrollView>(null);
   const isProgrammaticScroll = useRef(false);
 
-  // Estados dos Modais
+  // Estados dos Modais - CORRIGIDO: Declarado o estado de item selecionado
   const [selectionModalVisible, setSelectionModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [tipoCadastro, setTipoCadastro] = useState<
@@ -47,10 +56,8 @@ export default function MedicoScreen() {
   async function carregarMedicos() {
     try {
       setLoading(true);
-      // Simulação de fetch da API (Substituir pelo seu service real)
-      // const data = await getMedicos();
-      // setMedicos(data);
-      setMedicos([]); // Começa vazio
+      const data = await fetchMedicos();
+      setMedicos(data);
     } catch (error) {
       console.log(error);
       Alert.alert("Erro", "Não foi possível carregar os médicos.");
@@ -61,16 +68,19 @@ export default function MedicoScreen() {
 
   async function atualizarDadosSilencioso() {
     try {
-      // const data = await getMedicos();
-      // setMedicos(data);
+      const data = await fetchMedicos();
+      setMedicos(data);
     } catch (error) {
       console.log(error);
     }
   }
 
-  // Separa as listas para os slides baseados no Enum TipoMedico do seu Prisma
-  const efetivos = medicos.filter((m) => m.tipo === "EFETIVO");
-  const residentes = medicos.filter((m) => m.tipo === "RESIDENTE");
+  const efetivos = medicos.filter(
+    (m) => m.tipo === "Efetivo" || m.tipo === "EFETIVO",
+  );
+  const residentes = medicos.filter(
+    (m) => m.tipo === "Residente" || m.tipo === "RESIDENTE",
+  );
 
   function gerenciarTrocaAba(aba: "efetivos" | "residentes") {
     if (abaAtiva === aba) return;
@@ -104,7 +114,7 @@ export default function MedicoScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              // await deleteMedico(id);
+              await fetchDeleteMedico(id);
               Alert.alert("Sucesso", "Médico removido com sucesso!");
               atualizarDadosSilencioso();
             } catch (error) {
@@ -118,7 +128,9 @@ export default function MedicoScreen() {
 
   function handleEdit(item: any) {
     setItemSelecionado(item);
-    setTipoCadastro(item.tipo);
+    setTipoCadastro(
+      item.tipo?.toUpperCase() === "EFETIVO" ? "EFETIVO" : "RESIDENTE",
+    );
     setModalVisible(true);
   }
 
@@ -131,18 +143,74 @@ export default function MedicoScreen() {
   async function handleSave(dados: any) {
     try {
       if (itemSelecionado) {
-        // await updateMedico(itemSelecionado.id, dados);
-        Alert.alert("Sucesso", "Cadastro médico atualizado!");
+        await fetchUpdateMedico(itemSelecionado.id, {
+          matricula: dados.matricula,
+          nome: dados.nome,
+          email: dados.email,
+          telefone: dados.telefone,
+          tipo: dados.tipo,
+        });
+        Alert.alert("Sucesso", "Cadastro médico updated!");
       } else {
-        // await createMedico(dados);
-        Alert.alert("Sucesso", "Novo médico cadastrado!");
+        const responseMedico = await fetchCreateMedico({
+          matricula: dados.matricula,
+          nome: dados.nome,
+          email: dados.email,
+          telefone: dados.telefone,
+          tipo: dados.tipo,
+        });
+
+        const novoMedicoId = responseMedico.data.id;
+
+        if (dados.tipo === "Residente") {
+          await Promise.all([
+            fetchCreateMedicoResidente({
+              medicoId: novoMedicoId,
+              valorBolsa: dados.bolsa ? Number(dados.bolsa) : undefined,
+              orgaoPagador: dados.orgaoPagador || undefined,
+              dataInicioResidencia: new Date().toISOString(),
+            }),
+            fetchCreateMedicoLotacao({
+              medicoId: novoMedicoId,
+              ambulatorioId: dados.ambulatorioId,
+              dataInicio: new Date().toISOString(),
+            }),
+          ]);
+        } else {
+          await Promise.all([
+            fetchCreateMedicoEfetivo({
+              medicoId: novoMedicoId,
+              dataAdmissao: new Date().toISOString(),
+              supervisorId: dados.supervisorId || undefined,
+            }),
+            fetchCreateMedicoLotacao({
+              medicoId: novoMedicoId,
+              ambulatorioId: dados.ambulatorioId,
+              dataInicio: new Date().toISOString(),
+            }),
+          ]);
+        }
+
+        Alert.alert(
+          "Sucesso",
+          `Médico ${dados.tipo.toLowerCase()} cadastrado e lotado com sucesso!`,
+        );
+        setTimeout(
+          () =>
+            gerenciarTrocaAba(
+              dados.tipo === "Efetivo" ? "efetivos" : "residentes",
+            ),
+          300,
+        );
       }
+
       setModalVisible(false);
       setTipoCadastro(null);
       setItemSelecionado(null);
       await atualizarDadosSilencioso();
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível salvar o médico.");
+      console.log("Erro no fluxo do handleSave:");
+      Alert.alert("Erro", "O preenchimento violou as regras de validação.");
     }
   }
 
@@ -179,7 +247,7 @@ export default function MedicoScreen() {
         </View>
       </View>
 
-      {/* SHORTCUTS / TABS (Fundo fixo sem animação bizarra) */}
+      {/* SHORTCUTS / TABS */}
       <View style={styles.shortcutRow}>
         {[
           {
@@ -307,7 +375,7 @@ export default function MedicoScreen() {
         <Ionicons name="add" size={30} color="#FFF" />
       </Pressable>
 
-      {/* POP-UP DE ESCOLA DO SUBTIPO */}
+      {/* POP-UP DE ESCOLHA */}
       <Modal visible={selectionModalVisible} transparent animationType="fade">
         <View style={styles.selectionOverlay}>
           <View style={styles.selectionCard}>
@@ -315,13 +383,13 @@ export default function MedicoScreen() {
               Selecione o vínculo do Médico
             </Text>
             <TouchableOpacity
-              style={styles.typeButtonEfetivo}
+              style={styles.typeButtonHospital}
               onPress={() => handleSelectTipo("EFETIVO")}
             >
               <Text style={styles.typeButtonText}>📋 Médico Efetivo</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.typeButtonResidente}
+              style={styles.typeButton}
               onPress={() => handleSelectTipo("RESIDENTE")}
             >
               <Text style={styles.typeButtonText}>🎓 Médico Residente</Text>
@@ -341,7 +409,7 @@ export default function MedicoScreen() {
         visible={modalVisible}
         tipo={tipoCadastro}
         medico={itemSelecionado}
-        supervisoresDisponiveis={efetivos} // Só médicos efetivos podem supervisionar
+        supervisoresDisponiveis={efetivos}
         onClose={() => {
           setModalVisible(false);
           setTipoCadastro(null);
@@ -443,21 +511,25 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: "#1F2937",
   },
-  typeButtonEfetivo: {
-    backgroundColor: COLORS.primary,
-    width: "100%",
-    padding: 16,
-    borderRadius: 14,
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  typeButtonResidente: {
+  typeButton: {
     backgroundColor: "#1565C0",
     width: "100%",
     padding: 16,
     borderRadius: 14,
     alignItems: "center",
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  typeButtonHospital: {
+    backgroundColor: COLORS.primary,
+    width: "100%",
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   typeButtonText: { fontSize: 16, fontWeight: "600", color: "#FFF" },
   closeSelectionButton: { marginTop: 8, padding: 10 },

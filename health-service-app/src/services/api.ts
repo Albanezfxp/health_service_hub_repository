@@ -13,11 +13,8 @@ type CreateHospitalDTO = {
 
 const getBaseURL = () => {
   if (Platform.OS === "android") {
-    // Mantém o IP especial que o emulador do Android Studio usa para acessar a máquina hospedeira
     return "http://10.0.2.2:3000";
   }
-
-  // ATUALIZADO: Seu IP real atual da rede Wi-Fi (para iOS ou dispositivo físico Android)
   return "http://192.168.0.5:3000";
 };
 
@@ -32,7 +29,15 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.log("❌ API Erro:", error.message);
+    // Interceptor inteligente: Mostra exatamente qual campo falhou na validação do NestJS
+    if (error.response && error.response.data) {
+      console.log(
+        "❌ Erro 400 - Detalhes do Backend:",
+        JSON.stringify(error.response.data, null, 2),
+      );
+    } else {
+      console.log("❌ API Erro:", error.message);
+    }
     return Promise.reject(error);
   },
 );
@@ -47,23 +52,13 @@ export const fetchLogin = async (payload: LoginUserRequest) => {
   return response.data;
 };
 
-export const fetchHospitais = async () => {
-  const reponse = await api.get("/hospitais");
-  return reponse.data;
-};
-
-export const fetchMedicos = async () => {
-  const response = await api.get("/medicos");
-  return response.data;
-};
-
-export const fetchAmbulatorios = async () => {
-  const response = await api.get("/ambulatorios");
-  return response.data;
-};
-
 export const fetchUserById = async (id: string) => {
   const response = await api.get(`/users/${id}`);
+  return response.data;
+};
+
+export const fetchHospitais = async () => {
+  const response = await api.get("/hospitais");
   return response.data;
 };
 
@@ -74,6 +69,16 @@ export const FetchcreateHospital = async (
   return response.data;
 };
 
+export const fetchAmbulatorios = async () => {
+  const response = await api.get("/ambulatorios");
+  return response.data;
+};
+
+export const fetchAmbulatorio = async () => {
+  const response = await api.get("/ambulatorios");
+  return response.data;
+};
+
 export const fetchCreateAmbulatorio = async (
   payload: Ambulatorio,
 ): Promise<Ambulatorio> => {
@@ -81,7 +86,36 @@ export const fetchCreateAmbulatorio = async (
   return response.data;
 };
 
-export const fetchAmbulatorio = async () => {
-  const response = await api.get("/ambulatorios");
+export const fetchMedicos = async () => {
+  const response = await api.get("/medicos");
+  return response.data;
+};
+
+export const fetchCreateMedico = async (payload: any) => {
+  return await api.post("/medicos", payload);
+};
+
+export const fetchUpdateMedico = async (id: string, payload: any) => {
+  const response = await api.put(`/medicos/${id}`, payload);
+  return response.data;
+};
+
+export const fetchDeleteMedico = async (id: string) => {
+  const response = await api.delete(`/medicos/${id}`);
+  return response.data;
+};
+
+export const fetchCreateMedicoResidente = async (payload: any) => {
+  const response = await api.post("/medicos-residentes", payload);
+  return response.data;
+};
+
+export const fetchCreateMedicoEfetivo = async (payload: any) => {
+  const response = await api.post("/medicos-efetivos", payload);
+  return response.data;
+};
+
+export const fetchCreateMedicoLotacao = async (payload: any) => {
+  const response = await api.post("/medicos-lotacoes", payload);
   return response.data;
 };

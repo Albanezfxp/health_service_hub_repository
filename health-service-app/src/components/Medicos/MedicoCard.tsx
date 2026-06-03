@@ -34,18 +34,28 @@ export default function MedicoCard({
 
         <View style={styles.infoContainer}>
           <Text style={styles.nome}>{item.nome}</Text>
-          <Text style={styles.info}>🪪 Matrícula: {item.matricula}</Text>
-          <Text style={styles.info}>✉️ {item.email}</Text>
+          <Text style={styles.info}>
+            🪪 Matrícula: {item.matricula}{" "}
+            {item.carteira?.crm ? `| CRM: ${item.carteira.crm}` : ""}
+          </Text>
+          <Text style={styles.info}>
+            ✉️ {item.email} {item.telefone ? `| 📞 ${item.telefone}` : ""}
+          </Text>
 
-          {/* Renderização Condicional baseada no Subtipo */}
+          {/* Local de Lotação Vinculado */}
+          <Text style={styles.lotacaoTag}>
+            🏢 Lotação:{" "}
+            {item.lotacoes?.[0]?.ambulatorio?.nome || "Sem lotação ativa"}
+          </Text>
+
           {isEfetivo ? (
             <Text style={styles.detalhe}>
-              👔 Supervisor: {item.supervisor?.nome || "Nenhum (Diretor)"}
+              👔 Supervisor: {item.supervisor?.nome || "Diretoria Geral"}
             </Text>
           ) : (
             <Text style={[styles.detalhe, { color: "#1565C0" }]}>
               💰 Bolsa: R$ {Number(item.bolsa || 0).toFixed(2)} (
-              {item.orgaoPagador || "N/A"})
+              {item.orgaoPagador || "MS"})
             </Text>
           )}
         </View>
@@ -100,6 +110,12 @@ const styles = StyleSheet.create({
   infoContainer: { flex: 1 },
   nome: { fontSize: 17, fontWeight: "700", color: "#1F2937", marginBottom: 4 },
   info: { fontSize: 13, color: "#4B5563", marginBottom: 2 },
+  lotacaoTag: {
+    fontSize: 13,
+    color: "#374151",
+    fontWeight: "500",
+    marginTop: 2,
+  },
   detalhe: {
     fontSize: 13,
     color: COLORS.primary,
