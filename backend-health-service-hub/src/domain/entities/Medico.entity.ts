@@ -8,6 +8,11 @@ export class Medico {
   tipo: TipoMedico;
   criadoEm?: Date;
   atualizadoEm?: Date;
+  carteira?: {
+  crm: string;
+  orgaoExpedidor?: string;
+  dataExpedicao?: Date;
+};
 
   constructor(
     matricula: string,

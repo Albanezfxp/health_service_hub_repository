@@ -1,33 +1,35 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  StyleSheet,
-  Text,
-  View,
-  StatusBar,
-  Pressable,
-  Modal,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "@/theme/colors";
 import MedicoCard from "@/components/Medicos/MedicoCard";
 import MedicoForm from "@/components/Medicos/MedicoForm";
 import {
+  fetchCreateCarteiraFuncional,
   fetchCreateMedico,
-  fetchMedicos,
-  fetchUpdateMedico,
-  fetchDeleteMedico,
-  fetchCreateMedicoResidente,
   fetchCreateMedicoEfetivo,
   fetchCreateMedicoLotacao,
+  fetchCreateMedicoResidente,
+  fetchDeleteMedico,
+  fetchMedicos,
+  fetchUpdateCarteiraFuncional,
+  fetchUpdateMedico,
 } from "@/services/api";
+import { COLORS } from "@/theme/colors";
+import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  FlatList,
+  Modal,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -143,15 +145,33 @@ export default function MedicoScreen() {
   async function handleSave(dados: any) {
     try {
       if (itemSelecionado) {
-        await fetchUpdateMedico(itemSelecionado.id, {
-          matricula: dados.matricula,
-          nome: dados.nome,
-          email: dados.email,
-          telefone: dados.telefone,
-          tipo: dados.tipo,
-        });
-        Alert.alert("Sucesso", "Cadastro médico updated!");
-      } else {
+  await fetchUpdateMedico(itemSelecionado.id, {
+    matricula: dados.matricula,
+    nome: dados.nome,
+    email: dados.email,
+    telefone: dados.telefone,
+    tipo: dados.tipo,
+  });
+
+  // Atualiza a carteira funcional do médico efetivo
+  if (
+    dados.tipo === "Efetivo" &&
+    itemSelecionado.carteira?.id
+  ) {
+    await fetchUpdateCarteiraFuncional(
+      itemSelecionado.carteira.id,
+      {
+        crm: dados.crm,
+        orgaoExpedidor: dados.orgaoExpedidor,
+        dataExpedicao: new Date(),
+        idMedico: itemSelecionado.id,
+      }
+    );
+  }
+
+  Alert.alert("Sucesso", "Cadastro médico atualizado!");
+}
+      else {
         const responseMedico = await fetchCreateMedico({
           matricula: dados.matricula,
           nome: dados.nome,
@@ -183,12 +203,20 @@ export default function MedicoScreen() {
               dataAdmissao: new Date().toISOString(),
               supervisorId: dados.supervisorId || undefined,
             }),
-            fetchCreateMedicoLotacao({
+
+            fetchCreateCarteiraFuncional({
+              crm: dados.crm,
+              orgaoExpedidor: dados.orgaoExpedidor || "CRM",
+              dataExpedicao: new Date().toISOString(),
+              idMedico: novoMedicoId,
+            }),
+
+              fetchCreateMedicoLotacao({
               medicoId: novoMedicoId,
               ambulatorioId: dados.ambulatorioId,
               dataInicio: new Date().toISOString(),
-            }),
-          ]);
+              }),
+           ]);
         }
 
         Alert.alert(

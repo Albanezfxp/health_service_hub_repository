@@ -16,34 +16,45 @@ export class MedicoMapper {
   }
 
   static toResponse(medico: Medico) {
-    return {
-      id: medico.id,
-      matricula: medico.matricula,
-      nome: medico.nome,
-      telefone: medico.telefone,
-      email: medico.email,
-      tipo: medico.tipo,
-      criadoEm: medico.criadoEm,
-      atualizadoEm: medico.atualizadoEm ?? null,
-    };
-  }
+  return {
+    id: medico.id,
+    matricula: medico.matricula,
+    nome: medico.nome,
+    telefone: medico.telefone,
+    email: medico.email,
+    tipo: medico.tipo,
+    criadoEm: medico.criadoEm,
+    atualizadoEm: medico.atualizadoEm ?? null,
+    carteira: medico.carteira ?? null,
+  };
+}
 
   static toResponseList(medicos: Medico[]) {
     return medicos.map((medico) => this.toResponse(medico));
   }
 
   static prismaToEntity(data: any): Medico {
-    return new Medico(
-      data.matricula,
-      data.nome,
-      data.telefone,
-      data.email,
-      data.tipo,
-      data.criadoEm,
-      data.id,
-      data.atualizadoEm,
-    );
+  const medico = new Medico(
+    data.matricula,
+    data.nome,
+    data.telefone,
+    data.email,
+    data.tipo,
+    data.criadoEm,
+    data.id,
+    data.atualizadoEm,
+  );
+
+  if (data.carteira) {
+    medico.carteira = {
+      crm: data.carteira.crm,
+      orgaoExpedidor: data.carteira.orgaoExpedidor,
+      dataExpedicao: data.carteira.dataExpedicao,
+    };
   }
+
+  return medico;
+}
 
   static toPrismaCreate(medico: Medico) {
     return {

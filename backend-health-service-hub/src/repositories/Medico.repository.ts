@@ -15,21 +15,13 @@ import { PrismaService } from 'src/infrastructure/persistence/prisma/prisma.serv
 export class MedicoRepository implements IMedicoRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<Medico[]> {
-    const medicos_bd = await this.prisma.medico.findMany();
-
-    const entity = medicos_bd.map((medico) => {
-      return new Medico(
-        medico.matricula,
-        medico.nome,
-        medico.telefone ?? '',
-        medico.email ?? '',
-        medico.tipo,
-        medico.criadoEm,
-      );
-    });
-    return entity;
-  }
+  async findAll(): Promise<any[]> {
+  return await this.prisma.medico.findMany({
+    include: {
+      carteira: true,
+    },
+  });
+}
 
   async findById(id: string): Promise<Medico | null> {
     const medico_bd = await this.prisma.medico.findUnique({
