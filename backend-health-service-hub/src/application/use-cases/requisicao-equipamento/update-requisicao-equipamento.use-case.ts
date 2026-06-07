@@ -15,19 +15,28 @@ export class UpdateRequisicaoEquipamentoUseCase {
   ) {}
 
   async execute(
-    id: string,
-    dto: UpdateRequisicaoEquipamentoDto,
-  ): Promise<RequisicaoEquipamento> {
-    const requisicao = new RequisicaoEquipamento(
-      '',
-      new Date(),
-      dto.quantidade || 1,
-      '',
-      '',
-      dto.status || ('Solicitado' as StatusRequisicao),
-      dto.dataEntrega ? new Date(dto.dataEntrega) : undefined,
-      id,
-    );
-    return this.repository.update(id, requisicao);
+  id: string,
+  dto: UpdateRequisicaoEquipamentoDto,
+): Promise<RequisicaoEquipamento> {
+  const atual = await this.repository.findById(id);
+
+  if (!atual) {
+    throw new Error('Requisição não encontrada');
   }
+
+  const requisicao = new RequisicaoEquipamento(
+    atual.numeroRequisicao,
+    atual.dataRequisicao,
+    dto.quantidade ?? atual.quantidade,
+    atual.auditoriaId,
+    atual.equipamentoId,
+    dto.status ?? atual.status,
+    dto.dataEntrega
+      ? new Date(dto.dataEntrega)
+      : atual.dataEntrega,
+    id,
+  );
+
+  return this.repository.update(id, requisicao);
+}
 }

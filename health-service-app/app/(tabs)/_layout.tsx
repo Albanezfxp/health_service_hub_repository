@@ -1,5 +1,5 @@
-import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 
 export default function TabLayout() {
   const colors = {
@@ -67,6 +67,52 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+  name="equipamentos"
+  options={{
+    title: "Equipamentos",
+    tabBarIcon: ({ color, size, focused }) => (
+      <Ionicons
+        name={focused ? "hardware-chip" : "hardware-chip-outline"}
+        size={size}
+        color={color}
+      />
+    ),
+  }}
+/>
+
+        <Tabs.Screen
+  name="auditorias"
+  options={{
+    title: "Auditorias",
+    tabBarIcon: ({ color, size, focused }) => (
+      <Ionicons
+        name={focused ? "clipboard" : "clipboard-outline"}
+        size={size}
+        color={color}
+      />
+    ),
+  }}
+/>
+
+      <Tabs.Screen
+  name="requisicoes"
+  options={{
+    title: "Requisições",
+    tabBarIcon: ({ color, size, focused }) => (
+      <Ionicons
+        name={
+          focused
+            ? "document-text"
+            : "document-text-outline"
+        }
+        size={size}
+        color={color}
+      />
+    ),
+  }}
+/>
 
       {/* 4. Escondendo o index da Navbar (já que ele só redireciona) */}
       <Tabs.Screen

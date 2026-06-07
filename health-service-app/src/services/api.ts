@@ -3,7 +3,6 @@ import { Hospital } from "@/types/interfaces/Hospital";
 import { LoginUserRequest } from "@/types/interfaces/LoginUserRequest";
 import { RegisterUserRequest } from "@/types/interfaces/RegisterUserRequest";
 import axios from "axios";
-import { Platform } from "react-native";
 
 type CreateHospitalDTO = {
   nome: string;
@@ -12,9 +11,6 @@ type CreateHospitalDTO = {
 };
 
 const getBaseURL = () => {
-  if (Platform.OS === "android") {
-    return "http://10.0.2.2:3000";
-  }
   return "http://192.168.0.6:3000";
 };
 
@@ -145,5 +141,94 @@ export const fetchUpdateCarteiraFuncional = async (
   payload: any,
 ) => {
   const response = await api.put(`/carteiras-funcionais/${id}`, payload);
+  return response.data;
+};
+
+export const fetchEquipamentos = async () => {
+  const response = await api.get("/equipamentos");
+  return response.data;
+};
+
+export const fetchCreateEquipamento = async (payload: any) => {
+  const response = await api.post("/equipamentos", payload);
+  return response.data;
+};
+
+export const fetchUpdateEquipamento = async (
+  id: string,
+  payload: any,
+) => {
+  const response = await api.put(`/equipamentos/${id}`, payload);
+  return response.data;
+};
+
+export const fetchDeleteEquipamento = async (id: string) => {
+  const response = await api.delete(`/equipamentos/${id}`);
+  return response.data;
+};
+
+export const fetchAuditorias = async () => {
+  const response = await api.get("/auditorias");
+  return response.data;
+};
+
+export const fetchCreateAuditoria = async (payload: any) => {
+  const response = await api.post("/auditorias", payload);
+  return response.data;
+};
+
+export const fetchUpdateAuditoria = async (
+  id: string,
+  payload: any,
+) => {
+  const response = await api.put(`/auditorias/${id}`, payload);
+  return response.data;
+};
+
+export const fetchDeleteAuditoria = async (id: string) => {
+  const response = await api.delete(`/auditorias/${id}`);
+  return response.data;
+};
+
+export const fetchMedicosEfetivos = async () => {
+  const response = await api.get("/medicos-efetivos");
+  return response.data;
+};
+
+export const fetchRequisicoesEquipamento = async () => {
+  const response = await api.get("/requisicoes-equipamentos");
+  return response.data;
+};
+
+export const fetchCreateRequisicaoEquipamento = async (
+  payload: any,
+) => {
+  const response = await api.post(
+    "/requisicoes-equipamentos",
+    payload,
+  );
+
+  return response.data;
+};
+
+export const fetchUpdateRequisicaoEquipamento = async (
+  id: string,
+  payload: any,
+) => {
+  const response = await api.put(
+    `/requisicoes-equipamentos/${id}`,
+    payload,
+  );
+
+  return response.data;
+};
+
+export const fetchDeleteRequisicaoEquipamento = async (
+  id: string,
+) => {
+  const response = await api.delete(
+    `/requisicoes-equipamentos/${id}`,
+  );
+
   return response.data;
 };

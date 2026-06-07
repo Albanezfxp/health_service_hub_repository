@@ -11,14 +11,21 @@ export class UpdateAuditoriaUseCase {
     private readonly repository: IAuditoriaRepository,
   ) {}
 
-  async execute(id: string, dto: UpdateAuditoriaDto): Promise<Auditoria> {
+  async execute(
+    id: string,
+    dto: UpdateAuditoriaDto,
+  ): Promise<Auditoria> {
     const auditoria = new Auditoria(
-      dto.dataAuditoria ? new Date(dto.dataAuditoria) : new Date(),
-      '',
-      '',
-      dto.observacoes,
-      id,
-    );
+  dto.dataAuditoria
+    ? new Date(dto.dataAuditoria)
+    : new Date(),
+
+  dto.ambulatorioId!,
+  dto.medicoResponsavelId!,
+  dto.observacoes,
+  id,
+);
+
     return this.repository.update(id, auditoria);
   }
 }
