@@ -11,7 +11,7 @@ type CreateHospitalDTO = {
 };
 
 const getBaseURL = () => {
-  return "http://192.168.0.6:3000";
+  return "http://192.168.0.2:3000";
 };
 
 export const api = axios.create({
@@ -154,10 +154,7 @@ export const fetchCreateEquipamento = async (payload: any) => {
   return response.data;
 };
 
-export const fetchUpdateEquipamento = async (
-  id: string,
-  payload: any,
-) => {
+export const fetchUpdateEquipamento = async (id: string, payload: any) => {
   const response = await api.put(`/equipamentos/${id}`, payload);
   return response.data;
 };
@@ -177,10 +174,7 @@ export const fetchCreateAuditoria = async (payload: any) => {
   return response.data;
 };
 
-export const fetchUpdateAuditoria = async (
-  id: string,
-  payload: any,
-) => {
+export const fetchUpdateAuditoria = async (id: string, payload: any) => {
   const response = await api.put(`/auditorias/${id}`, payload);
   return response.data;
 };
@@ -200,13 +194,8 @@ export const fetchRequisicoesEquipamento = async () => {
   return response.data;
 };
 
-export const fetchCreateRequisicaoEquipamento = async (
-  payload: any,
-) => {
-  const response = await api.post(
-    "/requisicoes-equipamentos",
-    payload,
-  );
+export const fetchCreateRequisicaoEquipamento = async (payload: any) => {
+  const response = await api.post("/requisicoes-equipamentos", payload);
 
   return response.data;
 };
@@ -215,20 +204,13 @@ export const fetchUpdateRequisicaoEquipamento = async (
   id: string,
   payload: any,
 ) => {
-  const response = await api.put(
-    `/requisicoes-equipamentos/${id}`,
-    payload,
-  );
+  const response = await api.put(`/requisicoes-equipamentos/${id}`, payload);
 
   return response.data;
 };
 
-export const fetchDeleteRequisicaoEquipamento = async (
-  id: string,
-) => {
-  const response = await api.delete(
-    `/requisicoes-equipamentos/${id}`,
-  );
+export const fetchDeleteRequisicaoEquipamento = async (id: string) => {
+  const response = await api.delete(`/requisicoes-equipamentos/${id}`);
 
   return response.data;
 };
