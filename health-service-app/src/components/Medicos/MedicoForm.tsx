@@ -1,19 +1,20 @@
-import React, { useEffect, useState } from "react";
+import { fetchAmbulatorios } from "@/services/api";
+import { COLORS } from "@/theme/colors";
+import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker"; // <-- Importado o Picker oficial
+import { useEffect, useState } from "react";
 import {
+  Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   View,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "@/theme/colors";
-import { fetchAmbulatorio } from "@/services/api";
 
 interface MedicoFormProps {
   visible: boolean;
@@ -70,7 +71,7 @@ export default function MedicoForm({
 
   async function buscarAmbulatoriosDoSistema() {
     try {
-      const data = await fetchAmbulatorio();
+      const data = await fetchAmbulatorios();
       setAmbulatorios(data);
     } catch (error) {
       console.log("Erro ao carregar ambulatórios no form médico:", error);
@@ -169,6 +170,7 @@ export default function MedicoForm({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
+            {/* Matrícula */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Matrícula *</Text>
               <TextInput
@@ -185,6 +187,7 @@ export default function MedicoForm({
               />
             </View>
 
+            {/* Nome */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Nome Completo *</Text>
               <TextInput
@@ -201,6 +204,7 @@ export default function MedicoForm({
               />
             </View>
 
+            {/* Email */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>E-mail Institucional *</Text>
               <TextInput
@@ -218,6 +222,7 @@ export default function MedicoForm({
               />
             </View>
 
+            {/* Telefone */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Telefone</Text>
               <TextInput
@@ -235,45 +240,29 @@ export default function MedicoForm({
               />
             </View>
 
+            {/* Ambulatório (Modificado para usar o Picker) */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Lotação Inicial (Ambulatório) *</Text>
-              <ScrollView
-                style={styles.selectorContainer}
-                nestedScrollEnabled={true}
-              >
-                {ambulatorios.map((amb) => {
-                  const isSelected = idAmbulatorioSelecionado === amb.id;
-                  return (
-                    <TouchableOpacity
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={idAmbulatorioSelecionado}
+                  onValueChange={(itemValue) => setIdAmbulatorioSelecionado(itemValue)}
+                  dropdownIconColor={COLORS.primary || "#1F2937"}
+                >
+                  <Picker.Item label="Selecione um ambulatório..." value="" color="#9CA3AF" />
+                  {ambulatorios.map((amb) => (
+                    <Picker.Item
                       key={amb.id}
-                      style={[
-                        styles.selectorItem,
-                        isSelected && styles.selectorItemActive,
-                      ]}
-                      onPress={() => setIdAmbulatorioSelecionado(amb.id)}
-                    >
-                      <Ionicons
-                        name={isSelected ? "checkbox" : "square-outline"}
-                        size={18}
-                        color={isSelected ? "#2E7D32" : "#9CA3AF"}
-                      />
-                      <Text
-                        style={[
-                          styles.selectorItemText,
-                          isSelected && {
-                            fontWeight: "600",
-                            color: COLORS.primary,
-                          },
-                        ]}
-                      >
-                        {amb.nome} {amb.sigla ? `(${amb.sigla})` : ""}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
+                      label={`${amb.nome} ${amb.sigla ? `(${amb.sigla})` : ""}`}
+                      value={amb.id}
+                      color="#1F2937"
+                    />
+                  ))}
+                </Picker>
+              </View>
             </View>
 
+            {/* Se Residente */}
             {tipo === "RESIDENTE" && (
               <>
                 <View style={styles.inputGroup}>
@@ -310,12 +299,11 @@ export default function MedicoForm({
               </>
             )}
 
+            {/* Se Efetivo */}
             {tipo === "EFETIVO" && (
               <>
                 <View style={styles.row}>
-                  <View
-                    style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}
-                  >
+                  <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
                     <Text style={styles.label}>CRM *</Text>
                     <TextInput
                       style={[
@@ -347,58 +335,29 @@ export default function MedicoForm({
                   </View>
                 </View>
 
+                {/* Supervisor (Modificado para usar o Picker também e evitar o mesmo erro de scroll) */}
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>
-                    Selecione o Supervisor Médico
-                  </Text>
-                  <ScrollView
-                    style={styles.selectorContainer}
-                    nestedScrollEnabled={true}
-                  >
-                    {supervisoresDisponiveis
-                      .filter((s) => s.id !== medico?.id)
-                      .map((sup) => {
-                        const isSelected = supervisorId === sup.id;
-                        return (
-                          <TouchableOpacity
-                            key={sup.id}
-                            style={[
-                              styles.selectorItem,
-                              isSelected && styles.selectorItemActive,
-                            ]}
-                            onPress={() =>
-                              setSupervisorId(isSelected ? "" : sup.id)
-                            }
-                          >
-                            <Ionicons
-                              name={
-                                isSelected
-                                  ? "radio-button-on"
-                                  : "radio-button-off"
-                              }
-                              size={18}
-                              color={isSelected ? COLORS.primary : "#9CA3AF"}
-                            />
-                            <Text
-                              style={[
-                                styles.selectorItemText,
-                                isSelected && {
-                                  fontWeight: "600",
-                                  color: COLORS.primary,
-                                },
-                              ]}
-                            >
-                              {sup.nome}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                  </ScrollView>
+                  <Text style={styles.label}>Selecione o Supervisor Médico</Text>
+                  <View style={styles.pickerContainer}>
+                    <Picker
+                      selectedValue={supervisorId}
+                      onValueChange={(itemValue) => setSupervisorId(itemValue)}
+                      dropdownIconColor={COLORS.primary || "#1F2937"}
+                    >
+                      <Picker.Item label="Nenhum supervisor selecionado" value="" color="#9CA3AF" />
+                      {supervisoresDisponiveis
+                        .filter((s) => s.id !== medico?.id)
+                        .map((sup) => (
+                          <Picker.Item key={sup.id} label={sup.nome} value={sup.id} color="#1F2937" />
+                        ))}
+                    </Picker>
+                  </View>
                 </View>
               </>
             )}
           </ScrollView>
 
+          {/* Footer */}
           <View style={styles.footer}>
             <TouchableOpacity
               style={[
@@ -460,29 +419,16 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   row: { flexDirection: "row", justifyContent: "space-between" },
-  selectorContainer: {
-    maxHeight: 110,
+  
+  // Novo estilo aplicado para encapsular e estilizar os Pickers
+  pickerContainer: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 12,
     backgroundColor: "#F9FAFB",
-    padding: 6,
-    marginBottom: 4,
+    justifyContent: "center",
   },
-  selectorItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 4,
-    gap: 8,
-    backgroundColor: "#FFF",
-  },
-  selectorItemActive: {
-    backgroundColor: "#F0F9FF",
-    borderColor: COLORS.primary,
-  },
-  selectorItemText: { fontSize: 14, color: "#4B5563", flex: 1 },
+  
   footer: { marginTop: 12, gap: 10 },
   saveButton: {
     backgroundColor: COLORS.primary,
